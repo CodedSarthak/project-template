@@ -1,6 +1,7 @@
 {
   "name": "projectName",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@10.15.0",
   "scripts": {
     "dev": "pnpm --parallel --filter frontend --filter backend dev",
