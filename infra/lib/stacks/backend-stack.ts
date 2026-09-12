@@ -8,16 +8,11 @@ import { Construct } from 'constructs';
 import type { BackendStackConfig } from '../config/backend.js';
 
 export class BackendStack extends cdk.Stack {
-  constructor(
-    scope: Construct,
-    id: string,
-    config: BackendStackConfig,
-    props?: cdk.StackProps,
-  ) {
+  constructor(scope: Construct, id: string, config: BackendStackConfig, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const environment: Record<string, string> = {
-        ...(config.lambda?.environment ?? {}),
+      ...(config.lambda?.environment ?? {}),
     };
 
     for (const [index, secretConfig] of (config.secrets ?? []).entries()) {
@@ -27,11 +22,8 @@ export class BackendStack extends cdk.Stack {
         secretConfig.secretName,
       );
 
-      for (const [environmentKey, secretKey] of Object.entries(
-        secretConfig.environmentKeys,
-      )) {
-        environment[environmentKey] =
-          secret.secretValueFromJson(secretKey).unsafeUnwrap();
+      for (const [environmentKey, secretKey] of Object.entries(secretConfig.environmentKeys)) {
+        environment[environmentKey] = secret.secretValueFromJson(secretKey).unsafeUnwrap();
       }
     }
 
@@ -40,15 +32,11 @@ export class BackendStack extends cdk.Stack {
 
       handler: 'lambda.handler',
 
-      code: lambda.Code.fromAsset(
-        path.join(__dirname, '../../../backend/dist'),
-      ),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../../backend/dist')),
 
       memorySize: config.lambda?.memorySize ?? 512,
 
-      timeout: cdk.Duration.seconds(
-        config.lambda?.timeoutSeconds ?? 30,
-      ),
+      timeout: cdk.Duration.seconds(config.lambda?.timeoutSeconds ?? 30),
 
       environment,
     });
@@ -67,9 +55,7 @@ export class BackendStack extends cdk.Stack {
     });
 
     api.root.addProxy({
-      defaultIntegration: new apigateway.LambdaIntegration(
-        backendFunction,
-      ),
+      defaultIntegration: new apigateway.LambdaIntegration(backendFunction),
       anyMethod: true,
     });
 

@@ -11,14 +11,6 @@
 
     "noEmit": false
   },
-  "include": [
-    "bin/**/*.ts",
-    "lib/**/*.ts",
-    "*.ts"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules",
-    "test"
-  ]
+  "include": ["bin/**/*.ts", "lib/**/*.ts", "*.ts"],
+  "exclude": ["dist", "node_modules", "test"]
 }

@@ -36,12 +36,14 @@ new BackendStack(
       memorySize: 512,
       timeoutSeconds: 30,
 
-      environment: { // Add any additional environment variables here
+      environment: {
+        // Add any additional environment variables here
         NODE_ENV: 'production',
       },
     },
 
-    secrets: [ // Add SecretsManager secrets here
+    secrets: [
+      // Add SecretsManager secrets here
       {
         secretName: 'projectName/database',
 

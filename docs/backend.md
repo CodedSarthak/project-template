@@ -84,4 +84,3 @@ The backend uses a small, maintainable structure:
 - `middlewares/` for reusable Express middleware
 - `utils/` for shared helper functions
 - `server.ts` for bootstrapping the app
-
