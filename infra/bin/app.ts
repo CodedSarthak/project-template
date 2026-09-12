@@ -30,7 +30,7 @@ new BackendStack(
   app,
   'BackendStack',
   {
-    apiName: 'my-project-api',
+    apiName: 'projectName-api',
 
     lambda: {
       memorySize: 512,
@@ -42,14 +42,14 @@ new BackendStack(
     },
 
     secrets: [ // Add SecretsManager secrets here
-        {   
-            secretName: 'my-project/database',
+      {
+        secretName: 'projectName/database',
 
-            environmentKeys: { 
-                DATABASE_URL: 'DATABASE_URL',
-                DIRECT_URL: 'DIRECT_URL',
-            },
-        }
+        environmentKeys: {
+          DATABASE_URL: 'DATABASE_URL',
+          DIRECT_URL: 'DIRECT_URL',
+        },
+      },
     ],
   },
   {
