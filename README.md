@@ -74,7 +74,7 @@ The backend uses a production-safe environment contract and reads secrets throug
 ## How to create a new project from this template
 
 1. Git clone this repository, and run these commands : `pnpm install`, `pnpm typecheck`.
-2. Run these commands : `git remote remove origin`, then add your repository's origin and verify using `git remote -v`.
+2. After cloning, Run these commands : `Remove-Item -Recurse -Force .git`, then `git init`, then add your repository's origin and verify using `git remote -v`.
 3. Rename the root package name and all workspace package names to your project slug. Replace `projectName` in the entire repository.
 4. In pipeline.yml, we are using `AWS_DEPLOY_ROLE_ARN` to deploy the infra to AWS. So setup that role in AWS, and then add that to Github Secrets.
 5. Replace the sample Prisma schema with your real database model.
