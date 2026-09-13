@@ -73,10 +73,11 @@ The backend uses a production-safe environment contract and reads secrets throug
 
 ## How to create a new project from this template
 
-1. Rename the root package name and all workspace package names to your project slug.
-2. Update AWS names in `infra/bin/app.ts`.
-3. Update any secret names and environment references to match your project.
+1. Git clone this repository, and run these commands : `pnpm install`, `pnpm typecheck`.
+2. Rename the root package name and all workspace package names to your project slug. Replace `projectName` in the entire repository.
+3. In pipeline.yml, we are using `AWS_DEPLOY_ROLE_ARN` to deploy the infra to AWS. So setup that role in AWS, and then add that to Github Secrets.
 4. Replace the sample Prisma schema with your real database model.
 5. Add your application logic inside `frontend` and `backend`.
-6. Add environment variables in `.env` files or your deployment platform.
+6. Add environment variables in `.env` fil
+   es or your deployment platform.
 7. Run the repo and deploy via the CDK pipeline.
