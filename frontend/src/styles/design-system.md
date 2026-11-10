@@ -23,8 +23,20 @@ Core design principles:
 - Shared design language across multiple application types
 - Light and dark modes with one semantic token architecture
 - Responsive behavior designed intentionally, not simply compressed
+- Light background → dark foreground
+- Dark background → light foreground
 
 This system is intended for personal productivity tools, dashboards, content systems, and product-facing web apps while remaining visually consistent across the full ecosystem.
+
+### Foreground/background rule
+
+The design system follows one unbreakable rule:
+
+- When a surface uses a light background, its text must use a dark foreground token.
+- When a surface uses a dark background, its text must use a light foreground token.
+- Components must never set text to a hardcoded light color on a light surface or dark color on a dark surface.
+
+This rule is enforced by using semantic tokens such as `--bg-app`, `--bg-surface`, and `--fg-default` instead of direct color values.
 
 ---
 

@@ -1,6 +1,11 @@
 :root {
   color-scheme: light;
 
+  /* Foreground/background rule:
+     light backgrounds use dark foreground values
+     dark backgrounds use light foreground values
+  */
+
   --font-sans: "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", sans-serif;
   --font-mono: "SFMono-Regular", "JetBrains Mono", "Fira Code", monospace;
 
@@ -165,10 +170,10 @@
   --radius-2xl: 24px;
 
   --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 16px 32px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 24px 48px rgba(15, 23, 42, 0.1);
-  --shadow-xl: 0 32px 64px rgba(15, 23, 42, 0.12);
+  --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 12px 24px rgba(15, 23, 42, 0.09);
+  --shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.12);
 
   --control-xs: 28px;
   --control-sm: 32px;
@@ -262,9 +267,9 @@
   color-scheme: dark;
 
   --bg-app: var(--primitive-dark-950);
-  --bg-subtle: var(--primitive-dark-900);
-  --bg-surface: var(--primitive-dark-900);
-  --bg-surface-alt: var(--primitive-dark-800);
+  --bg-subtle: #0e131a;
+  --bg-surface: #11161e;
+  --bg-surface-alt: #171f2b;
   --bg-muted: var(--primitive-dark-800);
   --bg-elevated: var(--primitive-dark-700);
   --bg-overlay: rgba(2, 6, 23, 0.7);
@@ -298,6 +303,12 @@
   --input-bg: var(--primitive-dark-900);
   --input-border: var(--primitive-dark-600);
   --input-placeholder: var(--primitive-400);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.35);
 
   --hover-bg: #172233;
   --active-bg: #1a2d46;
