@@ -1,0 +1,28 @@
+{
+  "name": "project-template",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "dev:backend": "pnpm --filter @project-template/backend run dev",
+    "dev:frontend": "pnpm --filter @project-template/frontend run dev",
+    "build": "pnpm --recursive --filter \"!project-template\" run build",
+    "typecheck": "pnpm --recursive --filter \"!project-template\" run typecheck",
+    "lint": "eslint .",
+    "prisma:generate:app": "pnpm --filter @project-template/backend run prisma:generate",
+    "prisma:migrate:app": "pnpm --filter @project-template/backend run prisma:migrate",
+    "prisma:studio:app": "pnpm --filter @project-template/backend run prisma:studio",
+    "infra:synth": "pnpm --filter @project-template/infra synth",
+    "infra:deploy": "pnpm --filter @project-template/infra deploy",
+    "infra:diff": "pnpm --filter @project-template/infra diff"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "eslint": "^10.13.0"
+  }
+}
