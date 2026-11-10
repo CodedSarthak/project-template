@@ -1,0 +1,31 @@
+{
+    "name": "@project-template/infra",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "bin": {
+        "infra": "bin/infra.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "typecheck": "tsc --noEmit",
+        "watch": "tsc -w",
+        "cdk": "cdk",
+        "synth": "cdk synth",
+        "diff": "cdk diff",
+        "deploy": "cdk deploy",
+        "destroy": "cdk destroy"
+    },
+    "dependencies": {
+        "aws-cdk-lib": "^2.180.0",
+        "constructs": "^10.3.0",
+        "dotenv": "^16.4.7"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.2",
+        "aws-cdk": "^2.180.0",
+        "esbuild": "^0.24.0",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.2"
+    }
+}

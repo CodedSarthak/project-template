@@ -1,0 +1,18 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "./dist",
+        "declaration": true,
+        "declarationMap": true
+    },
+    "include": [
+        "bin/**/*",
+        "lib/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "cdk.out"
+    ]
+}
