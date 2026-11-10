@@ -1,29 +1,44 @@
-import { PrismaClient as AppPrismaClient, type Prisma as AppPrisma } from '@prisma/client';
+
+import { PrismaClient, Prisma } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { env } from './env.js';
 
 const globalForPrisma = globalThis as unknown as {
-  dbPool?: Pool;
-  authDb?: AuthPrismaClient;
-  appDb?: AppPrismaClient;
+  prismaPool?: Pool;
+  prisma?: PrismaClient;
 };
 
 const pool =
-  globalForPrisma.dbPool ??
+  globalForPrisma.prismaPool ??
   new Pool({
     connectionString: env.DATABASE_URL,
-    max: 10,
-    idleTimeoutMillis: 30000,
+    max: 5,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 5_000,
   });
 
 const adapter = new PrismaPg(pool);
 
-export const appDb: AppPrismaClient = globalForPrisma.appDb ?? new AppPrismaClient({ adapter });
-export { AppPrismaClient };
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    adapter,
+    log:
+      env.NODE_ENV === 'development'
+        ? ['warn', 'error']
+        : ['error'],
+  });
 
-if (!env.isProduction) {
-  globalForPrisma.dbPool = pool;
+if (env.NODE_ENV !== 'production') {
+  globalForPrisma.prismaPool = pool;
+  globalForPrisma.prisma = prisma;
 }
 
-export type DB = AuthPrismaClient | AuthPrisma.TransactionClient;
+export { Prisma };
+export type { PrismaClient };
+
+export async function disconnectDatabase(): Promise<void> {
+  await prisma.$disconnect();
+  await pool.end();
+}

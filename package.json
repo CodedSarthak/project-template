@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@11.20.0",
   "scripts": {
+    "dev": "pnpm --parallel dev:backend dev:frontend",
     "dev:backend": "pnpm --filter @project-template/backend run dev",
     "dev:frontend": "pnpm --filter @project-template/frontend run dev",
     "build": "pnpm --recursive --filter \"!project-template\" run build",
@@ -12,6 +13,7 @@
     "prisma:generate:app": "pnpm --filter @project-template/backend run prisma:generate",
     "prisma:migrate:app": "pnpm --filter @project-template/backend run prisma:migrate",
     "prisma:studio:app": "pnpm --filter @project-template/backend run prisma:studio",
+    "prisma:seed:app": "pnpm --filter @project-template/backend run prisma:seed",
     "infra:synth": "pnpm --filter @project-template/infra synth",
     "infra:deploy": "pnpm --filter @project-template/infra deploy",
     "infra:diff": "pnpm --filter @project-template/infra diff"
@@ -21,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "eslint": "^10.13.0"

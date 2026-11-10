@@ -10,11 +10,11 @@ export function getRequiredEnv(name: string): string {
   return value;
 }
 
-const NODE_ENV = getRequiredEnv('NODE_ENV');
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 export const env = {
   NODE_ENV,
-  PORT: Number(getRequiredEnv('PORT')),
+  PORT: Number(process.env.PORT || 3000),
   isProduction: NODE_ENV === 'production',
 
   // JWT Configuration
@@ -25,4 +25,8 @@ export const env = {
 
   // Database Configuration
   DATABASE_URL: getRequiredEnv('DATABASE_URL'),
+
+  // S3 Configuration (defaults provided for dev, override in production)
+  AWS_REGION: process.env.AWS_REGION || 'us-east-1',
+  S3_BUCKET: process.env.S3_BUCKET || '',
 };
