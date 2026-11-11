@@ -12,7 +12,9 @@ if (!ACCESS_TOKEN_SECRET || !REFRESH_TOKEN_SECRET || !ACCESS_TOKEN_EXPIRATION ||
 
 // Payload carried by the short-lived access token
 export interface TokenPayload {
-    userId: string;
+    userId?: string;
+    sub?: string;
+    id?: string;
 }
 
 // Payload carried by the long-lived refresh token.

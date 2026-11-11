@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
-export function getRequiredEnv(name: string): string {
-  const value = process.env[name];
+export function getRequiredEnv(name: string, fallback?: string): string {
+  const value = process.env[name] || fallback;
 
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
@@ -11,20 +11,30 @@ export function getRequiredEnv(name: string): string {
 }
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
+const isProduction = NODE_ENV === 'production';
 
 export const env = {
   NODE_ENV,
   PORT: Number(process.env.PORT || 3000),
-  isProduction: NODE_ENV === 'production',
+  isProduction,
 
-  // JWT Configuration
-  JWT_ACCESS_SECRET: getRequiredEnv('JWT_ACCESS_SECRET'),
-  JWT_REFRESH_SECRET: getRequiredEnv('JWT_REFRESH_SECRET'),
-  JWT_ACCESS_EXPIRATION: getRequiredEnv('JWT_ACCESS_EXPIRATION'),
-  JWT_REFRESH_EXPIRATION: getRequiredEnv('JWT_REFRESH_EXPIRATION'),
+  // CORS Configuration
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
+
+  // JWT Configuration (central auth public key or shared secret)
+  JWT_ACCESS_SECRET: isProduction
+    ? getRequiredEnv('JWT_ACCESS_SECRET')
+    : process.env.JWT_ACCESS_SECRET || 'dev_jwt_access_secret_key_minimum_32_characters_long',
+  JWT_REFRESH_SECRET: isProduction
+    ? getRequiredEnv('JWT_REFRESH_SECRET')
+    : process.env.JWT_REFRESH_SECRET || 'dev_jwt_refresh_secret_key_minimum_32_characters_long',
+  JWT_ACCESS_EXPIRATION: process.env.JWT_ACCESS_EXPIRATION || '15m',
+  JWT_REFRESH_EXPIRATION: process.env.JWT_REFRESH_EXPIRATION || '7d',
 
   // Database Configuration
-  DATABASE_URL: getRequiredEnv('DATABASE_URL'),
+  DATABASE_URL: isProduction
+    ? getRequiredEnv('DATABASE_URL')
+    : process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/mydb',
 
   // S3 Configuration (defaults provided for dev, override in production)
   AWS_REGION: process.env.AWS_REGION || 'us-east-1',

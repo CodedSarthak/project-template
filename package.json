@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@11.20.0",
   "scripts": {
-    "dev": "pnpm --parallel dev:backend dev:frontend",
+    "dev": "pnpm --filter @project-template/backend --filter @project-template/frontend --parallel run dev",
     "dev:backend": "pnpm --filter @project-template/backend run dev",
     "dev:frontend": "pnpm --filter @project-template/frontend run dev",
     "build": "pnpm --recursive --filter \"!project-template\" run build",

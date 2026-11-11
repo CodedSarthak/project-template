@@ -32,8 +32,20 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     return;
   }
 
+  const userId = decoded.userId || decoded.sub || decoded.id;
+
+  if (!userId) {
+    const errorResponse: ApiErrorResponse = {
+      success: false,
+      code: ErrorCode.UNAUTHENTICATED,
+      message: 'Invalid access token: missing user identifier (userId, sub, or id)',
+    };
+    res.status(401).json(errorResponse);
+    return;
+  }
+
   req.user = {
-    id: decoded.userId,
+    id: userId,
   };
 
   next();
