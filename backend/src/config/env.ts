@@ -21,15 +21,10 @@ export const env = {
   // CORS Configuration
   CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
 
-  // JWT Configuration (central auth public key or shared secret)
+  // JWT Configuration (central auth shared secret or public key)
   JWT_ACCESS_SECRET: isProduction
     ? getRequiredEnv('JWT_ACCESS_SECRET')
     : process.env.JWT_ACCESS_SECRET || 'dev_jwt_access_secret_key_minimum_32_characters_long',
-  JWT_REFRESH_SECRET: isProduction
-    ? getRequiredEnv('JWT_REFRESH_SECRET')
-    : process.env.JWT_REFRESH_SECRET || 'dev_jwt_refresh_secret_key_minimum_32_characters_long',
-  JWT_ACCESS_EXPIRATION: process.env.JWT_ACCESS_EXPIRATION || '15m',
-  JWT_REFRESH_EXPIRATION: process.env.JWT_REFRESH_EXPIRATION || '7d',
 
   // Database Configuration
   DATABASE_URL: isProduction
