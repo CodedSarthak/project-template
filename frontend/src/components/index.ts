@@ -7,4 +7,5 @@ export * from './navbar.js';
 export * from './sidebar.js';
 export * from './userModal.js';
 export * from './welcomeScreen.js';
+export * from './ProtectedRoute.js';
 
