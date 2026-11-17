@@ -2,6 +2,7 @@ import express, { type Express } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import { authenticateToken } from './middleware/authMiddleware.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
@@ -9,6 +10,24 @@ import { errorHandler } from './middleware/errorMiddleware.js';
 const app: Express = express();
 
 app.use(helmet());
+
+// Rate limiting — applied globally. Tune windowMs / limit per route as needed.
+// In production behind API Gateway or a load balancer, set `trustProxy: true` and
+// configure a shared store (e.g. Redis) so limits are enforced across Lambda instances.
+const globalRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 300,                // max 300 requests per window per IP
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    success: false,
+    code: 'TOO_MANY_REQUESTS',
+    message: 'Too many requests, please try again later.',
+  },
+  skip: () => !env.isProduction, // disabled in development for convenience
+});
+
+app.use(globalRateLimit);
 
 app.use(
   cors({
@@ -23,10 +42,15 @@ app.use(
       const isAllowed = allowedOrigins.some((allowed) => {
         if (allowed === origin) return true;
         if (allowed.includes('*.')) {
-          const domainSuffix = allowed.replace(/^https?:\/\/\*\./, '.');
           try {
-            const originHost = new URL(origin).hostname;
-            return originHost.endsWith(domainSuffix) || originHost === domainSuffix.slice(1);
+            const allowedUrl = new URL(allowed.replace('*.', 'subdomain-placeholder.'));
+            const originUrl = new URL(origin);
+
+            if (allowedUrl.protocol !== originUrl.protocol) return false;
+            if (allowedUrl.port !== originUrl.port) return false;
+
+            const domainSuffix = allowedUrl.hostname.replace('subdomain-placeholder.', '.');
+            return originUrl.hostname.endsWith(domainSuffix) || originUrl.hostname === domainSuffix.slice(1);
           } catch {
             return false;
           }

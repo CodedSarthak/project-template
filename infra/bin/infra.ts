@@ -16,14 +16,14 @@ const stackEnv: cdk.Environment = {
 const backendStack = new BackendStack(app, `project-template-Backend-${environmentName}`, {
     environmentName,
     env: stackEnv,
-    description: `Backend Infrastructure for project-templates (${environmentName}): Lambda, API Gateway, S3 Storage, Secrets Manager`,
+    description: `Backend Infrastructure for project-template (${environmentName}): Lambda, API Gateway, S3 Storage, Secrets Manager`,
 });
 
-const frontendStack = new FrontendStack(app, `project-templates-Frontend-${environmentName}`, {
+const frontendStack = new FrontendStack(app, `project-template-Frontend-${environmentName}`, {
     environmentName,
     apiGateway: backendStack.apiGateway,
     env: stackEnv,
-    description: `Frontend Infrastructure for project-templates (${environmentName}): S3 SPA Bucket, CloudFront CDN`,
+    description: `Frontend Infrastructure for project-template (${environmentName}): S3 SPA Bucket, CloudFront CDN`,
 });
 
 frontendStack.node.addDependency(backendStack);

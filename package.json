@@ -13,7 +13,6 @@
     "prisma:generate:app": "pnpm --filter @project-template/backend run prisma:generate",
     "prisma:migrate:app": "pnpm --filter @project-template/backend run prisma:migrate",
     "prisma:studio:app": "pnpm --filter @project-template/backend run prisma:studio",
-    "prisma:seed:app": "pnpm --filter @project-template/backend run prisma:seed",
     "infra:synth": "pnpm --filter @project-template/infra synth",
     "infra:deploy": "pnpm --filter @project-template/infra deploy",
     "infra:diff": "pnpm --filter @project-template/infra diff"

@@ -36,7 +36,7 @@ Copy `.env.example` in `backend/` and configure your credentials:
 ```bash
 cp backend/.env.example backend/.env
 ```
-Ensure your `DATABASE_URL` and `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` are populated.
+Ensure your `DATABASE_URL` and `JWT_ACCESS_SECRET` are populated.
 
 ### 4. Database Setup
 ```bash
@@ -54,6 +54,8 @@ pnpm dev
 ```
 - **Backend API**: `http://localhost:3000`
 - **Frontend App**: `http://localhost:5173` (with `/api` dev proxy to port 3000)
+
+> **Note — Central Auth Service**: The frontend contacts the central auth service (login, logout, token refresh) via `VITE_AUTH_SERVICE_URL`. In development this defaults to `http://localhost:3001`. Make sure your local auth service is running on that port, or update `frontend/.env` to point to wherever it is running. In production this will be the deployed auth service URL.
 
 ---
 
@@ -206,8 +208,10 @@ project-template/
 │   └── package.json
 ├── frontend/               # Vite + React 19 + Tailwind v4 application
 │   ├── src/
-│   │   ├── auth/           # AuthService, AuthProvider context, ProtectedRoute
-│   │   ├── components/     # Navbar, Sidebar, UserModal, ConfirmDelete, WelcomeScreen
+│   │   ├── components/     # Navbar, Sidebar, UserModal, ConfirmDelete, WelcomeScreen, ProtectedRoute
+│   │   ├── context/        # AuthProvider, AuthContext, useAuth hook
+│   │   ├── services/       # auth.ts (auth service calls), api.ts (apiFetch with auto-refresh)
+│   │   ├── config/         # env.ts (AUTH_SERVICE_URL, API_URL)
 │   │   ├── styles/         # Design tokens and Tailwind CSS integration
 │   │   └── App.tsx         # Clean starter dashboard shell
 │   └── package.json

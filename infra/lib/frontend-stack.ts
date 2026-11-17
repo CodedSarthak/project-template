@@ -1,12 +1,19 @@
+import * as path from 'node:path';
+import * as fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import * as cdk from 'aws-cdk-lib';
 import {
     aws_s3 as s3,
+    aws_s3_deployment as s3deploy,
     aws_apigateway as apigateway,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_certificatemanager as acm,
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export interface FrontendStackProps extends cdk.StackProps {
     environmentName?: string;
@@ -83,6 +90,16 @@ export class FrontendStack extends cdk.Stack {
                         cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
                 }
             );
+        }
+
+        const distDir = path.resolve(__dirname, '../../frontend/dist');
+        if (fs.existsSync(distDir)) {
+            new s3deploy.BucketDeployment(this, 'DeployFrontendAssets', {
+                sources: [s3deploy.Source.asset(distDir)],
+                destinationBucket: this.frontendBucket,
+                distribution: this.distribution,
+                distributionPaths: ['/*'],
+            });
         }
 
         new cdk.CfnOutput(this, 'FrontendBucketName', {

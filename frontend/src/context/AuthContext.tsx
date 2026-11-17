@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
   useCallback,
@@ -14,19 +12,10 @@ import {
   redirectToLogin,
   redirectToRegister,
 } from '../services/auth.js';
-
-export interface AuthContextType {
-  user: AuthUser | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (nextUrl?: string) => void;
-  register: (nextUrl?: string) => void;
-  logout: (options?: { redirect?: boolean }) => Promise<void>;
-  refresh: () => Promise<boolean>;
-  checkAuth: () => Promise<AuthUser | null>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import {
+  AuthContext,
+  type AuthContextType,
+} from './authContextCore.js';
 
 export interface AuthProviderProps {
   children: ReactNode;
@@ -63,8 +52,39 @@ export function AuthProvider({ children, autoRedirect = false }: AuthProviderPro
   }, [autoRedirect]);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    let isMounted = true;
+
+    async function initAuth() {
+      try {
+        let currentUser = await fetchCurrentUser();
+
+        if (!currentUser) {
+          const refreshed = await refreshSession();
+          if (refreshed) {
+            currentUser = await fetchCurrentUser();
+          }
+        }
+
+        if (isMounted) {
+          setUser(currentUser);
+
+          if (!currentUser && autoRedirect) {
+            redirectToLogin();
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void initAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [autoRedirect]);
 
   const login = useCallback((nextUrl?: string) => {
     redirectToLogin(nextUrl);
@@ -108,12 +128,4 @@ export function AuthProvider({ children, autoRedirect = false }: AuthProviderPro
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }

@@ -49,6 +49,11 @@ export async function initSecrets(): Promise<void> {
       }
     } catch (err) {
       console.error('[SecretsManager] Failed to load secrets from AWS Secrets Manager:', err);
+      // Re-throw in production so the Lambda invocation fails fast with a clear error
+      // rather than continuing with missing secrets and producing confusing downstream failures.
+      if (process.env.NODE_ENV !== 'development') {
+        throw err;
+      }
     }
   })();
 

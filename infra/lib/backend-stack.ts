@@ -48,7 +48,10 @@ export class BackendStack extends cdk.Stack {
             s3.HttpMethods.DELETE,
             s3.HttpMethods.HEAD,
           ],
-          allowedOrigins: ['*'],
+          // Narrowing to specific origins is recommended for production.
+          // The signed URL is the primary security boundary, but defence-in-depth
+          // means you should replace '*' with your app domain(s) once known.
+          allowedOrigins: corsOrigins.length > 0 ? corsOrigins : ['*'],
           allowedHeaders: ['*'],
           exposedHeaders: ['ETag'],
           maxAge: 3000,
@@ -90,10 +93,11 @@ export class BackendStack extends cdk.Stack {
         PORT: process.env.PORT || '3000',
         ...(corsOrigin ? { CORS_ORIGIN: corsOrigin } : {}),
         S3_BUCKET: this.storageBucket.bucketName,
+        // Secrets Manager secret ID/ARN — initSecrets() loads all secret keys at cold start.
+        // DATABASE_URL and JWT_ACCESS_SECRET must NOT be set here as plain env vars;
+        // they are loaded securely from Secrets Manager at runtime.
         SECRET_NAME: this.appSecret.secretName,
         SECRET_ARN: this.appSecret.secretArn,
-        DATABASE_URL: this.appSecret.secretValueFromJson('DATABASE_URL').unsafeUnwrap(),
-        JWT_ACCESS_SECRET: this.appSecret.secretValueFromJson('JWT_ACCESS_SECRET').unsafeUnwrap(),
       },
     });
 
