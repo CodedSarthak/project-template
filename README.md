@@ -14,48 +14,112 @@ A clean, production-ready monorepo template engineered to minimize configuration
 
 ---
 
-## 🚀 Quick Start
+## 🚀 How to Create a New App From This Template
+
+Follow this step-by-step checklist whenever starting a new application using this template:
 
 ### 1. Prerequisites
-- Node.js >= 20.x
-- pnpm >= 9.x
-- PostgreSQL database (local or cloud)
+- **Node.js** >= 20.x
+- **pnpm** >= 9.x
+- **PostgreSQL** running locally or on a cloud provider
+- A running instance of your **Central Auth Service** (local or hosted)
 
-### 2. Installation
+---
+
+### 2. Copy Template & Initialize Repository
 ```bash
-# Clone the repository
-git clone <your-repo-url> my-app
-cd my-app
+# Clone the template into your new app folder
+git clone <project-template-repo-url> my-new-app
+cd my-new-app
 
-# Install all workspace dependencies
-pnpm install
+# Optional: Reset git history for your independent project
+rm -rf .git
+git init
 ```
 
-### 3. Environment Configuration
-Copy `.env.example` in `backend/` and configure your credentials:
+---
+
+### 3. Customize App Identity
+Update the application metadata:
+- **`package.json`**: Change `"name": "project-template"` to `"my-new-app"`.
+- **`frontend/index.html`**: Update `<title>Your App Name</title>`.
+- **`infra/bin/infra.ts`**: (Optional) Update CDK stack names if deploying to AWS:
+  ```ts
+  `my-new-app-Backend-${environmentName}`
+  `my-new-app-Frontend-${environmentName}`
+  ```
+
+---
+
+### 4. Configure Environment Variables
+
+#### Backend (`backend/.env`)
 ```bash
 cp backend/.env.example backend/.env
 ```
-Ensure your `DATABASE_URL` and `JWT_ACCESS_SECRET` are populated.
+Fill in the following required values:
+* `DATABASE_URL`: `postgresql://postgres:postgres@localhost:5432/postgres?schema=my_new_app`
+  > **Tip**: Keep the same PostgreSQL database and isolate apps cleanly by changing `?schema={your_app_name}`.
+* `JWT_ACCESS_SECRET`: Paste the exact secret (or key) used by your Central Auth Service.
+* `CORS_ORIGIN`: Allowed frontend URLs (e.g. `http://localhost:5173` or `http://appname.myapp.test:5173`).
+* `S3_BUCKET`: Your dev S3 bucket name.
+* `PORT`: Port for your backend API (defaults to `3000`).
 
-### 4. Database Setup
+#### Frontend (`frontend/.env`)
 ```bash
-# Generate Prisma Client
-pnpm prisma:generate:app
+cp frontend/.env.example frontend/.env
+```
+Configure your service endpoints:
+* `VITE_AUTH_SERVICE_URL`: URL where the shared auth service is running (e.g. `http://localhost:3001` or `http://auth.myapp.test:3000`).
+* `VITE_API_URL`: URL to your app's backend API (`http://localhost:3000/api`).
 
-# Push database schema or run dev migrations
+---
+
+### 5. Install Dependencies & Initialize Database
+```bash
+# 1. Install all monorepo dependencies
+pnpm install
+
+# 2. Add your application models to backend/prisma/schema.prisma
+# (Example: model Project, model Task, etc.)
+
+# 3. Generate Prisma client & apply migrations to your isolated schema
+pnpm prisma:generate:app
 pnpm prisma:migrate:app
 ```
 
-### 5. Start Development
+---
+
+### 6. Start Local Development
 ```bash
-# Starts both Backend (port 3000) and Frontend (port 5173) concurrently
+# Starts Backend (port 3000) and Frontend (port 5173) in parallel
 pnpm dev
 ```
-- **Backend API**: `http://localhost:3000`
-- **Frontend App**: `http://localhost:5173` (with `/api` dev proxy to port 3000)
+* **Backend API**: `http://localhost:3000`
+* **Frontend App**: `http://localhost:5173`
+* **Test Auth Flow**: Open `http://localhost:5173`. If you're not logged in, `<ProtectedRoute>` will automatically redirect you to your central auth service login page with a `?next=` return target. After logging in, you'll be redirected back with an active session.
 
-> **Note — Central Auth Service**: The frontend contacts the central auth service (login, logout, token refresh) via `VITE_AUTH_SERVICE_URL`. In development this defaults to `http://localhost:3001`. Make sure your local auth service is running on that port, or update `frontend/.env` to point to wherever it is running. In production this will be the deployed auth service URL.
+---
+
+### 7. Building Your App Features
+
+#### A. Frontend (UI & Queries)
+1. Use the pre-built `apiFetch` in `frontend/src/services/api.ts` for all API calls (it automatically includes cookies and handles 401 token refresh silently).
+2. Use the `useAuth()` hook in any component to access the current user, loading state, or trigger logout:
+   ```tsx
+   import { useAuth } from './context/useAuth.js';
+
+   function DashboardHeader() {
+     const { user, logout } = useAuth();
+     return (
+       <div>
+         <span>Welcome, {user?.name || user?.email}</span>
+         <button onClick={() => logout()}>Logout</button>
+       </div>
+     );
+   }
+   ```
+3. Use the design system tokens and pre-made components (`Button`, `Card`, `Modal`, `Navbar`, `Sidebar`, etc.) from `frontend/src/components/`.
 
 ---
 
