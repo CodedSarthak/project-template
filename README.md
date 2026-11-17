@@ -59,6 +59,26 @@ pnpm dev
 
 ---
 
+## 🔐 Central Auth Service & Shared Domain Architecture
+
+Every application created from this template delegates authentication to a single, shared external auth service rather than implementing its own auth endpoints or user tables.
+
+> [!WARNING]
+> ### ⚠️ Critical: Shared Domain Cookie Requirement
+> 
+> The central auth service manages sessions via secure, `HttpOnly` cookies. For browser cookie sharing to function seamlessly across your micro-frontend ecosystem:
+> 
+> 1. **Same Root Domain**: The auth service and all template-derived client apps **must share the same parent domain** in production:
+>    - Central Auth: `https://auth.myapp.com`
+>    - Application 1: `https://dashboard.myapp.com`
+>    - Application 2: `https://crm.myapp.com`
+> 2. **Cookie Scope**: The central auth service must issue cookies with `Domain=.myapp.com` (note the leading dot) and `SameSite=Lax` (or `None` with `Secure`).
+> 3. **Different Domain Failure**: If an application is hosted on an entirely separate root domain (e.g. `myotherdomain.com`), modern browsers will block cross-site cookies, preventing automatic session verification and refresh.
+> 4. **Local Multi-App Testing**: For local subdomain testing, add local test domains to your hosts file (`127.0.0.1 auth.myapp.test app.myapp.test`) rather than using mismatched `localhost` ports with strict domain cookies.
+> 5. **Matching JWT Secret**: The backend's `JWT_ACCESS_SECRET` (configured in `.env` or AWS Secrets Manager) must be identical to the secret used by the central auth service to sign access tokens.
+
+---
+
 ## ❓ Why is `prisma.config.ts` Needed?
 
 You are using **Prisma v7 (`^7.10.1`)**, which introduced a major architectural change:

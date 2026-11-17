@@ -62,7 +62,7 @@ export class BackendStack extends cdk.Stack {
     });
 
     this.appSecret = new secretsmanager.Secret(this, 'AppSecret', {
-      secretName: `project-templates/${envName}/app-secrets`,
+      secretName: `project-template/${envName}/app-secrets`,
       description: `Application secrets for Express backend (${envName})`,
       generateSecretString: {
         secretStringTemplate: JSON.stringify({

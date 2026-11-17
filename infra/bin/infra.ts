@@ -8,6 +8,9 @@ const app = new cdk.App();
 const environmentName =
     app.node.tryGetContext('env') || process.env.NODE_ENV || 'production';
 
+const corsOrigin =
+    app.node.tryGetContext('corsOrigin') || process.env.CORS_ORIGIN;
+
 const stackEnv: cdk.Environment = {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION || process.env.AWS_REGION || 'us-east-1',
@@ -15,6 +18,7 @@ const stackEnv: cdk.Environment = {
 
 const backendStack = new BackendStack(app, `project-template-Backend-${environmentName}`, {
     environmentName,
+    corsOrigin,
     env: stackEnv,
     description: `Backend Infrastructure for project-template (${environmentName}): Lambda, API Gateway, S3 Storage, Secrets Manager`,
 });
