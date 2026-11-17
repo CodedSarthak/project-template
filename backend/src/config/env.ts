@@ -10,28 +10,41 @@ export function getRequiredEnv(name: string, fallback?: string): string {
   return value;
 }
 
-const NODE_ENV = process.env.NODE_ENV || 'development';
-const isProduction = NODE_ENV === 'production';
-
 export const env = {
-  NODE_ENV,
-  PORT: Number(process.env.PORT || 3000),
-  isProduction,
+  get NODE_ENV(): string {
+    return process.env.NODE_ENV || 'development';
+  },
+  get PORT(): number {
+    return Number(process.env.PORT || 3000);
+  },
+  get isProduction(): boolean {
+    return this.NODE_ENV === 'production';
+  },
 
   // CORS Configuration
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  get CORS_ORIGIN(): string {
+    return process.env.CORS_ORIGIN || 'http://localhost:5173';
+  },
 
   // JWT Configuration (central auth shared secret or public key)
-  JWT_ACCESS_SECRET: isProduction
-    ? getRequiredEnv('JWT_ACCESS_SECRET')
-    : process.env.JWT_ACCESS_SECRET || 'dev_jwt_access_secret_key_minimum_32_characters_long',
+  get JWT_ACCESS_SECRET(): string {
+    return this.isProduction
+      ? getRequiredEnv('JWT_ACCESS_SECRET')
+      : process.env.JWT_ACCESS_SECRET || 'dev_jwt_access_secret_key_minimum_32_characters_long';
+  },
 
   // Database Configuration
-  DATABASE_URL: isProduction
-    ? getRequiredEnv('DATABASE_URL')
-    : process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/mydb',
+  get DATABASE_URL(): string {
+    return this.isProduction
+      ? getRequiredEnv('DATABASE_URL')
+      : process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/mydb';
+  },
 
-  // S3 Configuration (defaults provided for dev, override in production)
-  AWS_REGION: process.env.AWS_REGION || 'us-east-1',
-  S3_BUCKET: process.env.S3_BUCKET || '',
+  // S3 Configuration
+  get AWS_REGION(): string {
+    return process.env.AWS_REGION || 'us-east-1';
+  },
+  get S3_BUCKET(): string {
+    return process.env.S3_BUCKET || '';
+  },
 };

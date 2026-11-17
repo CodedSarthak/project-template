@@ -10,21 +10,31 @@ const app: Express = express();
 
 app.use(helmet());
 
-const allowedOrigins = env.CORS_ORIGIN.split(',').map((origin) => origin.trim());
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. mobile apps, server-to-server, curl)
       if (!origin) return callback(null, true);
 
-      // In local development, allow all origins or subdomain patterns
       if (!env.isProduction) {
         return callback(null, true);
       }
 
-      // Check explicit CORS_ORIGIN list from environment
-      if (allowedOrigins.includes(origin)) {
+      const allowedOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
+      const isAllowed = allowedOrigins.some((allowed) => {
+        if (allowed === origin) return true;
+        if (allowed.includes('*.')) {
+          const domainSuffix = allowed.replace(/^https?:\/\/\*\./, '.');
+          try {
+            const originHost = new URL(origin).hostname;
+            return originHost.endsWith(domainSuffix) || originHost === domainSuffix.slice(1);
+          } catch {
+            return false;
+          }
+        }
+        return false;
+      });
+
+      if (isAllowed) {
         return callback(null, true);
       }
 
@@ -38,7 +48,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Example protected endpoint demonstrating authenticateToken middleware
 app.get('/api/example/protected', authenticateToken, (req, res) => {
   res.json({
     success: true,
