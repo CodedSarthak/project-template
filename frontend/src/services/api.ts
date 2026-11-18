@@ -3,6 +3,7 @@ import { refreshSession, redirectToLogin } from './auth.js';
 
 interface CustomRequestInit extends RequestInit {
   _retry?: boolean;
+  disableAuthRedirect?: boolean;
 }
 
 export async function apiFetch(
@@ -35,7 +36,9 @@ export async function apiFetch(
       });
     }
 
-    redirectToLogin();
+    if (!options.disableAuthRedirect) {
+      redirectToLogin();
+    }
   }
 
   return response;

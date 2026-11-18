@@ -11,6 +11,8 @@ import {
   logoutSession,
   redirectToLogin,
   redirectToRegister,
+  isAuthLoopDetected,
+  clearAuthLoop,
 } from '../services/auth.js';
 import {
   AuthContext,
@@ -25,24 +27,41 @@ export interface AuthProviderProps {
 export function AuthProvider({ children, autoRedirect = false }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [authLoopDetected, setAuthLoopDetected] = useState<boolean>(() => isAuthLoopDetected());
+  const [error, setError] = useState<string | null>(null);
 
-  const checkAuth = useCallback(async (): Promise<AuthUser | null> => {
+  const checkAuth = useCallback(async (signal?: AbortSignal): Promise<AuthUser | null> => {
     setIsLoading(true);
 
     try {
-      let currentUser = await fetchCurrentUser();
+      let currentUser: AuthUser | null = null;
+      try {
+        currentUser = await fetchCurrentUser(signal);
 
-      if (!currentUser) {
-        const refreshed = await refreshSession();
-        if (refreshed) {
-          currentUser = await fetchCurrentUser();
+        if (!currentUser) {
+          const refreshed = await refreshSession(signal);
+          if (refreshed) {
+            currentUser = await fetchCurrentUser(signal);
+          }
         }
-      }
 
-      setUser(currentUser);
+        setError(null);
+        setUser(currentUser);
 
-      if (!currentUser && autoRedirect) {
-        redirectToLogin();
+        if (currentUser) {
+          setAuthLoopDetected(false);
+        } else if (autoRedirect) {
+          const redirected = redirectToLogin();
+          if (!redirected) {
+            setAuthLoopDetected(true);
+          }
+        }
+      } catch (err) {
+        if (signal?.aborted) return null;
+        // Network or server outage: do not force redirect; record error
+        const errorMessage = err instanceof Error ? err.message : 'Unable to connect to auth service.';
+        setError(errorMessage);
+        console.warn('[Auth] Connection error verifying session:', errorMessage);
       }
 
       return currentUser;
@@ -52,46 +71,33 @@ export function AuthProvider({ children, autoRedirect = false }: AuthProviderPro
   }, [autoRedirect]);
 
   useEffect(() => {
-    let isMounted = true;
+    const controller = new AbortController();
 
-    async function initAuth() {
-      try {
-        let currentUser = await fetchCurrentUser();
-
-        if (!currentUser) {
-          const refreshed = await refreshSession();
-          if (refreshed) {
-            currentUser = await fetchCurrentUser();
-          }
-        }
-
-        if (isMounted) {
-          setUser(currentUser);
-
-          if (!currentUser && autoRedirect) {
-            redirectToLogin();
-          }
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void initAuth();
+    void checkAuth(controller.signal);
 
     return () => {
-      isMounted = false;
+      controller.abort();
     };
-  }, [autoRedirect]);
+  }, [checkAuth]);
 
   const login = useCallback((nextUrl?: string) => {
-    redirectToLogin(nextUrl);
+    const redirected = redirectToLogin(nextUrl);
+    if (!redirected) {
+      setAuthLoopDetected(true);
+    }
   }, []);
 
   const register = useCallback((nextUrl?: string) => {
     redirectToRegister(nextUrl);
+  }, []);
+
+  const handleClearAuthLoop = useCallback(() => {
+    clearAuthLoop();
+    setAuthLoopDetected(false);
+  }, []);
+
+  const handleClearError = useCallback(() => {
+    setError(null);
   }, []);
 
   const logout = useCallback(async (options: { redirect?: boolean } = { redirect: true }) => {
@@ -99,32 +105,44 @@ export function AuthProvider({ children, autoRedirect = false }: AuthProviderPro
     try {
       await logoutSession();
       setUser(null);
+      setError(null);
+      handleClearAuthLoop();
       if (options.redirect) {
         redirectToLogin();
       }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [handleClearAuthLoop]);
 
   const refresh = useCallback(async (): Promise<boolean> => {
-    const success = await refreshSession();
-    if (success) {
-      const updatedUser = await fetchCurrentUser();
-      setUser(updatedUser);
+    try {
+      const success = await refreshSession();
+      if (success) {
+        const updatedUser = await fetchCurrentUser();
+        setUser(updatedUser);
+        setError(null);
+        setAuthLoopDetected(false);
+      }
+      return success;
+    } catch {
+      return false;
     }
-    return success;
   }, []);
 
   const value: AuthContextType = {
     user,
     isLoading,
     isAuthenticated: !!user,
+    authLoopDetected,
+    error,
     login,
     register,
     logout,
     refresh,
     checkAuth,
+    clearAuthLoop: handleClearAuthLoop,
+    clearError: handleClearError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -34,6 +34,7 @@ export class FrontendStack extends cdk.Stack {
         const domainName = props?.domainName || process.env.DOMAIN_NAME;
         const certificateArn = props?.certificateArn || process.env.ACM_CERTIFICATE_ARN;
 
+        // CloudFront distributions require ACM certificates to be created in us-east-1 (N. Virginia)
         const certificate = certificateArn
             ? acm.Certificate.fromCertificateArn(this, 'CustomDomainCert', certificateArn)
             : undefined;
