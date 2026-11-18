@@ -30,9 +30,7 @@ export function AuthProvider({ children, autoRedirect = false }: AuthProviderPro
   const [authLoopDetected, setAuthLoopDetected] = useState<boolean>(() => isAuthLoopDetected());
   const [error, setError] = useState<string | null>(null);
 
-  const checkAuth = useCallback(async (signal?: AbortSignal): Promise<AuthUser | null> => {
-    setIsLoading(true);
-
+  const verifySession = useCallback(async (signal?: AbortSignal): Promise<AuthUser | null> => {
     try {
       let currentUser: AuthUser | null = null;
       try {
@@ -73,12 +71,17 @@ export function AuthProvider({ children, autoRedirect = false }: AuthProviderPro
   useEffect(() => {
     const controller = new AbortController();
 
-    void checkAuth(controller.signal);
+    void verifySession(controller.signal);
 
     return () => {
       controller.abort();
     };
-  }, [checkAuth]);
+  }, [verifySession]);
+
+  const checkAuth = useCallback(async (signal?: AbortSignal): Promise<AuthUser | null> => {
+    setIsLoading(true);
+    return verifySession(signal);
+  }, [verifySession]);
 
   const login = useCallback((nextUrl?: string) => {
     const redirected = redirectToLogin(nextUrl);

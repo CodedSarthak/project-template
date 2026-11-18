@@ -27,17 +27,22 @@ export async function apiFetch(
   const response = await fetch(url, options);
 
   if (response.status === 401 && !options._retry) {
-    const refreshed = await refreshSession();
+    try {
+      const refreshed = await refreshSession();
 
-    if (refreshed) {
-      return apiFetch(input, {
-        ...options,
-        _retry: true,
-      });
-    }
+      if (refreshed) {
+        return apiFetch(input, {
+          ...options,
+          _retry: true,
+        });
+      }
 
-    if (!options.disableAuthRedirect) {
-      redirectToLogin();
+      if (!options.disableAuthRedirect) {
+        redirectToLogin();
+      }
+    } catch (err) {
+      // Network outage or 5xx on auth service: avoid kicking the user to login on connection error
+      console.warn('[apiFetch] Session refresh encountered connection error:', err);
     }
   }
 

@@ -45,6 +45,8 @@ export const env = {
     return process.env.AWS_REGION || 'us-east-1';
   },
   get S3_BUCKET(): string {
-    return getRequiredEnv('S3_BUCKET');
+    return this.isProduction
+      ? getRequiredEnv('S3_BUCKET')
+      : process.env.S3_BUCKET || 'dev-local-bucket';
   },
 };

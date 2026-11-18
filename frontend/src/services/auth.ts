@@ -42,21 +42,10 @@ export function sanitizeReturnUrl(url?: string): string {
 
   try {
     const parsed = new URL(url);
-    // Allow exact same-origin
+    // Strictly require exact same-origin (protocol, hostname, port)
+    // This completely eliminates multi-label public suffix bypasses (e.g. .co.uk, .com.au)
     if (parsed.origin === window.location.origin) {
       return parsed.href;
-    }
-
-    // Allow subdomains sharing the same parent domain
-    const currentHost = window.location.hostname;
-    const parts = currentHost.split('.');
-    if (parts.length >= 2) {
-      const parentDomain = parts.slice(-2).join('.');
-      if (parsed.hostname === parentDomain || parsed.hostname.endsWith(`.${parentDomain}`)) {
-        if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
-          return parsed.href;
-        }
-      }
     }
   } catch {
     // Malformed URL, fall back to safe current page
@@ -122,7 +111,7 @@ export async function fetchCurrentUser(signal?: AbortSignal): Promise<AuthUser |
       },
       signal,
     });
-  } catch (err) {
+  } catch {
     if (signal?.aborted) {
       return null;
     }
@@ -139,9 +128,17 @@ export async function fetchCurrentUser(signal?: AbortSignal): Promise<AuthUser |
   }
 
   const data = await response.json();
-  const rawUser = data?.user || data?.data || data;
+  // Standardized against @project-template/shared:
+  // - AuthResponse: { user: AuthUser }
+  // - ApiSuccessResponse<AuthUser>: { success: true, data: AuthUser }
+  const rawUser = data?.user ?? (data?.success && data?.data ? data.data : undefined) ?? data?.data;
 
-  if (!rawUser || !rawUser.id) {
+  if (
+    !rawUser ||
+    typeof rawUser.id !== 'string' ||
+    !rawUser.id.trim() ||
+    typeof rawUser.email !== 'string'
+  ) {
     return null;
   }
 
@@ -149,10 +146,10 @@ export async function fetchCurrentUser(signal?: AbortSignal): Promise<AuthUser |
   clearAuthLoop();
 
   return {
-    id: String(rawUser.id),
-    email: String(rawUser.email || ''),
-    name: rawUser.name ? String(rawUser.name) : undefined,
-    createdAt: rawUser.createdAt ? String(rawUser.createdAt) : undefined,
+    id: rawUser.id.trim(),
+    email: rawUser.email.trim(),
+    name: typeof rawUser.name === 'string' ? rawUser.name : undefined,
+    createdAt: typeof rawUser.createdAt === 'string' ? rawUser.createdAt : undefined,
   };
 }
 
@@ -163,8 +160,9 @@ export async function refreshSession(signal?: AbortSignal): Promise<boolean> {
   }
 
   activeRefreshPromise = (async () => {
+    let response: Response;
     try {
-      const response = await fetch(`${AUTH_SERVICE_URL}/api/refresh`, {
+      response = await fetch(`${AUTH_SERVICE_URL}/api/refresh`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -172,13 +170,20 @@ export async function refreshSession(signal?: AbortSignal): Promise<boolean> {
         },
         signal,
       });
-
-      return response.ok;
     } catch {
-      return false;
+      if (signal?.aborted) {
+        return false;
+      }
+      throw new AuthConnectionError('Failed to contact authentication service during token refresh.');
     } finally {
       activeRefreshPromise = null;
     }
+
+    if (response.status >= 500) {
+      throw new AuthConnectionError(`Authentication service error during token refresh (${response.status}).`);
+    }
+
+    return response.ok;
   })();
 
   return activeRefreshPromise;
